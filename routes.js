@@ -27,7 +27,7 @@ router.get("/register", (req, res) => {
   res.render("register");
 })
 
-router.post("/register", (req, res, next) => {
+router.post("/register", async (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
 
@@ -36,13 +36,12 @@ router.post("/register", (req, res, next) => {
     password: password
   };
 
-  User.create(data, (err, user) => {
-    if (err) {
-      return next(err);
-    } else {
-      return res.redirect("/login");
-    }
-  })
+  try {
+    const user = await User.create(data);
+  } catch (e) {
+    console.log(e);
+  }
+  res.redirect("/login");
 });
 
 router.get("/login", (req, res) => {

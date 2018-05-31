@@ -1,25 +1,24 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const routes = require("./routes");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const db = require("./db");
 
-const app = express();
-const port = process.env.PORT || 3000;
+const createApp = async () => {
+  const app = express();
 
-mongoose.connect("mongodb://localhost/auth-test");
-var db = mongoose.connection;
+  await db.connect();
 
-db.on("error", console.error.bind(console, "connection error:"));
+  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(cookieParser());
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
+  app.use("/public", express.static(process.cwd() + "/public"));
+  app.set("view engine", "ejs");
 
-app.use("/public", express.static(process.cwd() + "/public"));
-app.set("view engine", "ejs");
+  const routes = require("./routes");
+  app.use("/", routes);
 
-app.use("/", routes);
+  return app;
+}
 
-app.listen(port, function() {
-    console.log("Server listening on port " + port + "...");
-});
+module.exports = createApp;
