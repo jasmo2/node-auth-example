@@ -1,16 +1,15 @@
 const request = require('supertest');
-const createApp = require('./app');
-const db = require("./db");
+process.env.DATABASE_URL = "mongodb://localhost/auth-test-test";
+const mongoose = require("mongoose");
+const app = require('./app');
+const User = require("./user");
 
-let app;
 beforeEach(async () => {
-  process.env.DATABASE_URL = "mongodb://localhost/auth-test-test";
-  app = await createApp();
-  await db.users().remove({});
+  await User.remove({});
 });
 
-afterEach(async () => {
-  await db.disconnect();
+afterAll(async () => {
+  await mongoose.disconnect();
 });
 
 test('GET / responds with success code', async () => {
@@ -25,7 +24,7 @@ test('POST /register redirects to login', async () => {
 });
 
 test('POST /login redirects to home', async () => {
-  await db.users().create({ username: "user1", password: "test1234" });
+  await User.create({ username: "user1", password: "test1234" });
   const response = await request(app).post('/login')
           .send("username=user1&password=test1234");
   expect(response.statusCode).toBe(302);

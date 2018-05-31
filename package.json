@@ -15,6 +15,6 @@
     "supertest": "^3.1.0"
   },
   "scripts": {
-    "test": "jest  --detectOpenHandles --forceExit"
+    "test": "jest --forceExit"
   }
 }

@@ -1,24 +1,17 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const db = require("./db");
+const mongoose = require("mongoose");
+const routes = require("./routes");
 
-const createApp = async () => {
-  const app = express();
+const app = express();
 
-  await db.connect();
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 
-  app.use(bodyParser.urlencoded({ extended: true }));
-  app.use(cookieParser());
+app.use("/public", express.static(process.cwd() + "/public"));
+app.set("view engine", "ejs");
 
-  app.use("/public", express.static(process.cwd() + "/public"));
-  app.set("view engine", "ejs");
+app.use("/", routes);
 
-  const routes = require("./routes");
-  app.use("/", routes);
-
-  return app;
-}
-
-module.exports = createApp;
+module.exports = app;
