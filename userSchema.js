@@ -26,24 +26,19 @@ UserSchema.pre("save", function (next) {
 });
 
 // used for authentication
-UserSchema.statics.authenticate = (username, password, cb) => {
-  mongoose.model("User").findOne({ username: username }, (err, user) => {
-    if (err) {
-      return cb(err);
-    } else if (!user) {
-      const err = new Error("User not found");
-      err.status = 401
-      return cb(err);
-    }
-
-    bcrypt.compare(password, user.password, (err, result) => {
-      if (result === true) {
-        return cb(null, user);
-      } else {
-        return cb();
-      }
+UserSchema.statics.authenticate = async (email, password) => {
+  const user = await mongoose.model("User").findOne({ email: email });
+  if (user) {
+    return new Promise((resolve, reject) => {
+      bcrypt.compare(password, user.password, (err, result) => {
+        if (err) reject(err);
+        resolve(result === true ? user : null);
+      });
     });
-  })
+    return user;
+  }
+
+  return null;
 };
 
 module.exports = UserSchema;

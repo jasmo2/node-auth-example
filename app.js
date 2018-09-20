@@ -1,13 +1,12 @@
 const express = require("express");
-const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
+const cookieSession = require('cookie-session')
 const mongoose = require("mongoose");
 const routes = require("./routes");
 
 const app = express();
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieSession({ secret: "session" }));
 
 app.use("/public", express.static(process.cwd() + "/public"));
 app.set("view engine", "ejs");

@@ -1,21 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const jwt = require("jsonwebtoken");
 const User = require("./user");
 
 // authentication middleware
-const requireUser = (req, res, next) => {
-  const token = req.cookies.token;
-  if (!token) {
-    return res.redirect("/login");
+const requireUser = async (req, res, next) => {
+  const userId = req.session.userId;
+  if (userId) {
+    const user = await User.findOne({ _id: userId });
+    res.locals.user = user;
+    next();
   } else {
-    jwt.verify(token, "secretcode", (err, decoded) => {
-      if (err) {
-        res.clearCookie("token");
-        return res.redirect("/login");
-      }
-      next();
-    });
+    return res.redirect("/login");
   }
 };
 
@@ -48,21 +43,21 @@ router.get("/login", (req, res) => {
   res.render("login");
 });
 
-router.post("/login", (req, res, next) => {
-  const username = req.body.username;
+router.post("/login", async (req, res, next) => {
+  const email = req.body.email;
   const password = req.body.password;
 
-  User.authenticate(username, password, (err, user) => {
-    if (err || !user) {
-      const err = new Error("Wrong email or password");
-      err.status = 401;
-      return next(err);
-    } else {
-      var token = jwt.sign({ userId: user._id }, "secretcode");
-      res.cookie("token", token, { expires: new Date(Date.now() + 900000), httpOnly: true });
+  try {
+    const user = await User.authenticate(email, password);
+    if (user) {
+      req.session.userId = user._id;
       return res.redirect("/");
+    } else {
+      res.render("/login", { error: "Wrong email or password. Try again!" });
     }
-  })
+  } catch (e) {
+    return next(e);
+  }
 });
 
 router.get("/logout", (req, res) => {
