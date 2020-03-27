@@ -11,7 +11,7 @@ const requireUser = async (req, res, next) => {
     res.locals.user = user
     next()
   } else {
-    return res.redirect('/login')
+    return res.redirect('/login', 301)
   }
 }
 
@@ -54,7 +54,7 @@ router.post('/login', async (req, res, next) => {
       req.session.userId = user._id
       return res.redirect('/')
     } else {
-      res.render('/login', { error: 'Wrong email or password. Try again!' })
+      return res.redirect('/login')
     }
   } catch (e) {
     return next(e)
